@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Técnico - Liceo La Portada</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    // Toggle Modo Oscuro
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPxjkm-GAqIJFt80rP2igwz-T6RIt1e40",
+      authDomain: "mis-notas-web-756e0.firebaseapp.com",
+      projectId: "mis-notas-web-756e0",
+      storageBucket: "mis-notas-web-756e0.appspot.com",
+      messagingSenderId: "281781573347",
+      appId: "1:281781573347:web:bc5eaee5565bd6dee457d6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    signInAnonymously(auth);
+
+    const form = document.getElementById('note-form');
+    const postsContainer = document.getElementById('posts-container');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const content = `Procesador: ${data.procesador} | RAM: ${data.ram} | Almacenamiento: ${data.almacenamiento} | Gráfica: ${data.grafica} | SO: ${data.sistema} | Notas: ${data.nota}`;
+
+      await addDoc(collection(db, 'posts'), {
+        title: data.title,
+        content: content,
+        createdAt: new Date().toISOString()
+      });
+      form.reset();
+    });
+
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+      postsContainer.innerHTML = '';
+      snapshot.forEach((doc) => {
+        const post = doc.data();
+        const div = document.createElement('div');
+        div.className = "p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300";
+        div.innerHTML = `
+          <h2 class="font-extrabold text-lg text-slate-800 dark:text-white">${post.title}</h2>
+          <div class="mt-3 text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700">${post.content}</div>
+          <div class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-4">${new Date(post.createdAt).toLocaleString()}</div>
+        `;
+        postsContainer.appendChild(div);
+      });
+    });
+  </script>
+</head>
+<body class="bg-[#f8fafc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6 md:p-12 transition-colors duration-300">
+  <button id="theme-toggle" class="fixed top-6 right-6 p-3 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700">🌙</button>
+  
+  <main class="max-w-2xl mx-auto">
+    <header class="flex flex-col items-center mb-12">
+      <div class="w-24 h-24 bg-white dark:bg-slate-800 rounded-3xl shadow-xl flex items-center justify-center mb-6 border border-slate-100 dark:border-slate-700">
+        <img src="https://www.liceolaportada.cl/wp-content/uploads/Tiburon-a22.png" alt="Logo Liceo" class="w-16 h-16 object-contain">
+      </div>
+      <h1 class="text-4xl font-extrabold tracking-tighter">Registro Técnico</h1>
+      <p class="text-slate-500 dark:text-slate-400 mt-2">Liceo La Portada - Gestión de Equipos</p>
+    </header>
+
+    <form id="note-form" class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl shadow-slate-100 dark:shadow-none border border-slate-100 dark:border-slate-700 mb-12">
+      <input name="title" required placeholder="Nombre o ID del Equipo" class="w-full mb-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none font-bold text-lg">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input name="procesador" placeholder="Procesador" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <input name="ram" placeholder="Memoria RAM" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <input name="almacenamiento" placeholder="Almacenamiento" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <input name="grafica" placeholder="Tarjeta Gráfica" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <input name="sistema" placeholder="Sistema Operativo" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+      </div>
+      <textarea name="nota" placeholder="Detalles de mantenimiento..." class="w-full mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none h-24"></textarea>
+      <button type="submit" class="w-full mt-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold hover:opacity-90 transition-all">Guardar Registro</button>
+    </form>
+
+    <div id="posts-container" class="grid grid-cols-1 gap-6"></div>
+  </main>
+</body>
+</html>
