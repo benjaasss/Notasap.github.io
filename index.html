@@ -44,11 +44,19 @@
       e.preventDefault();
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
-      const content = `Procesador: ${data.procesador} | RAM: ${data.ram} | Almacenamiento: ${data.almacenamiento} | Gráfica: ${data.grafica} | SO: ${data.sistema} | Notas: ${data.nota}`;
+      
+      // Creamos un resumen de solo los campos que tengan información
+      let content = "";
+      if (data.procesador) content += `Procesador: ${data.procesador} | `;
+      if (data.ram) content += `RAM: ${data.ram} | `;
+      if (data.almacenamiento) content += `Almacenamiento: ${data.almacenamiento} | `;
+      if (data.grafica) content += `Gráfica: ${data.grafica} | `;
+      if (data.sistema) content += `SO: ${data.sistema} | `;
+      if (data.nota) content += `Notas: ${data.nota}`;
 
       await addDoc(collection(db, 'posts'), {
         title: data.title,
-        content: content,
+        content: content || "Sin especificaciones adicionales.",
         createdAt: new Date().toISOString()
       });
       form.reset();
@@ -84,7 +92,7 @@
     </header>
 
     <form id="note-form" class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl shadow-slate-100 dark:shadow-none border border-slate-100 dark:border-slate-700 mb-12">
-      <input name="title" required placeholder="Nombre o ID del Equipo" class="w-full mb-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none font-bold text-lg">
+      <input name="title" required placeholder="Nombre o ID del Equipo (Obligatorio)" class="w-full mb-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none font-bold text-lg">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input name="procesador" placeholder="Procesador" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
         <input name="ram" placeholder="Memoria RAM" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
